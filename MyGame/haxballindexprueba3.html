@@ -1,0 +1,4133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2D Football Arena</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  user-select:none;
+}
+
+body{
+  min-height:100vh;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 20%,#18243b,#080b12 55%,#030407);
+  color:white;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+button,input,select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+.screen{
+  display:none;
+  width:100vw;
+  height:100vh;
+}
+
+.screen.active{
+  display:flex;
+}
+
+/* ================= MENU ================= */
+
+#menu{
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
+
+.logo{
+  font-size:clamp(34px,6vw,72px);
+  font-weight:1000;
+  letter-spacing:3px;
+  text-shadow:
+    0 4px 0 #07101c,
+    0 0 25px rgba(70,170,255,.5);
+  margin-bottom:35px;
+}
+
+.subtitle{
+  color:#8da2ba;
+  margin-top:-25px;
+  margin-bottom:30px;
+  letter-spacing:4px;
+}
+
+.menu-box{
+  width:min(430px,90vw);
+  padding:25px;
+  background:rgba(12,17,27,.95);
+  border:1px solid #30425d;
+  border-radius:18px;
+  box-shadow:0 20px 70px #000b;
+}
+
+.menu-input{
+  width:100%;
+  padding:14px;
+  margin-bottom:15px;
+  border-radius:10px;
+  border:1px solid #40516b;
+  background:#080d16;
+  color:white;
+  outline:none;
+  user-select:text;
+}
+
+.menu-input:focus{
+  border-color:#54aaff;
+}
+
+.menu-button{
+  width:100%;
+  padding:14px;
+  margin:6px 0;
+  border-radius:10px;
+  color:white;
+  background:linear-gradient(180deg,#1c3554,#102239);
+  border:1px solid #355579;
+  font-weight:800;
+  letter-spacing:1px;
+  transition:.12s;
+}
+
+.menu-button:hover{
+  transform:translateY(-2px);
+  background:linear-gradient(180deg,#28517d,#173451);
+  box-shadow:0 7px 25px #0008;
+}
+
+.menu-button.primary{
+  background:linear-gradient(180deg,#168cff,#0755a2);
+}
+
+/* ================= PANELS ================= */
+
+.panel{
+  width:min(1050px,94vw);
+  max-height:90vh;
+  overflow:auto;
+  margin:auto;
+  padding:28px;
+  background:rgba(10,15,24,.97);
+  border:1px solid #30425d;
+  border-radius:18px;
+  box-shadow:0 25px 90px #000b;
+}
+
+.panel h2{
+  margin-bottom:18px;
+  font-size:30px;
+}
+
+.panel-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.back{
+  padding:9px 16px;
+  border-radius:8px;
+  background:#172333;
+  color:white;
+}
+
+/* ================= ROOMS ================= */
+
+.room-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.room-table th,
+.room-table td{
+  padding:12px 9px;
+  border-bottom:1px solid #243143;
+  text-align:left;
+}
+
+.room-table th{
+  color:#7e9abb;
+  font-size:13px;
+}
+
+.room-row:hover{
+  background:#111c2a;
+}
+
+.join-btn{
+  padding:7px 13px;
+  border-radius:7px;
+  background:#087df0;
+  color:white;
+  font-weight:bold;
+}
+
+.small-btn{
+  padding:10px 15px;
+  border-radius:8px;
+  background:#17283c;
+  color:white;
+  border:1px solid #304863;
+}
+
+/* ================= CREATE ================= */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.form-group label{
+  color:#91a6bf;
+  font-size:13px;
+}
+
+.form-group input,
+.form-group select{
+  padding:12px;
+  background:#070c14;
+  color:white;
+  border:1px solid #34475f;
+  border-radius:8px;
+}
+
+/* ================= LOBBY ================= */
+
+.lobby-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.team-box{
+  padding:20px;
+  border-radius:13px;
+  background:#0b111b;
+  border:1px solid #27394f;
+}
+
+.team-title{
+  font-size:21px;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+
+.blue{
+  color:#46aaff;
+}
+
+.red{
+  color:#ff5c68;
+}
+
+.player-line{
+  padding:9px;
+  margin:5px 0;
+  background:#131d2a;
+  border-radius:7px;
+}
+
+.lobby-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+
+/* ================= SETTINGS ================= */
+
+.setting{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px 0;
+  border-bottom:1px solid #273343;
+}
+
+/* ================= GAME ================= */
+
+#game{
+  position:relative;
+  align-items:center;
+  justify-content:center;
+  background:#05080c;
+}
+
+#gameCanvas{
+  width:100vw;
+  height:100vh;
+  display:block;
+}
+
+.hud{
+  position:absolute;
+  left:50%;
+  top:10px;
+  transform:translateX(-50%);
+  width:min(650px,90vw);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:25px;
+  pointer-events:none;
+  z-index:5;
+}
+
+.score-team{
+  font-size:18px;
+  font-weight:900;
+  min-width:100px;
+}
+
+.score-team.left{
+  text-align:right;
+  color:#51b5ff;
+}
+
+.score-team.right{
+  text-align:left;
+  color:#ff626c;
+}
+
+.score{
+  font-size:38px;
+  color:white;
+}
+
+.timer{
+  min-width:80px;
+  text-align:center;
+  padding:7px 13px;
+  background:#07101aee;
+  border:1px solid #34485f;
+  border-radius:9px;
+  font-weight:900;
+}
+
+.player-name{
+  font-size:12px;
+  opacity:.8;
+}
+
+/* ================= CHAT ================= */
+
+.chat{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  width:min(330px,38vw);
+  min-width:250px;
+  z-index:10;
+  background:rgba(5,9,15,.88);
+  border:1px solid #31445c;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 10px 30px #0008;
+}
+
+.chat-messages{
+  height:145px;
+  overflow-y:auto;
+  padding:9px;
+}
+
+.chat-message{
+  font-size:13px;
+  margin-bottom:7px;
+  line-height:1.25;
+  word-break:break-word;
+}
+
+.chat-message .name{
+  color:#62b8ff;
+  font-weight:bold;
+}
+
+.chat-input-row{
+  display:flex;
+  border-top:1px solid #26384d;
+}
+
+#chatInput{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:#080e17;
+  color:white;
+  padding:10px;
+  user-select:text;
+}
+
+#chatSend{
+  width:65px;
+  background:#116fc3;
+  color:white;
+  font-weight:bold;
+}
+
+.chat-hint{
+  position:absolute;
+  bottom:4px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:11px;
+  color:#8092a7;
+}
+
+/* ================= GOAL ================= */
+
+.goal-banner{
+  position:absolute;
+  top:32%;
+  left:50%;
+  transform:translate(-50%,-50%) scale(.5);
+  opacity:0;
+  pointer-events:none;
+  z-index:20;
+  font-size:clamp(45px,9vw,110px);
+  font-weight:1000;
+  font-style:italic;
+  text-shadow:
+    0 5px 0 #111,
+    0 0 40px #fff;
+}
+
+.goal-banner.show{
+  animation:goalPop 1.2s ease-out forwards;
+}
+
+@keyframes goalPop{
+  0%{
+    opacity:0;
+    transform:translate(-50%,-50%) scale(.5)
+  }
+  18%{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1.12)
+  }
+  45%{
+    transform:translate(-50%,-50%) scale(1)
+  }
+  100%{
+    opacity:0;
+    transform:translate(-50%,-50%) scale(1.15)
+  }
+}
+
+@media(max-width:700px){
+
+  .form-grid,
+  .lobby-grid{
+    grid-template-columns:1fr;
+  }
+
+  .chat{
+    width:270px;
+    min-width:0;
+  }
+
+  .hud{
+    gap:8px;
+  }
+
+  .score-team{
+    min-width:70px;
+    font-size:14px;
+  }
+
+  .score{
+    font-size:29px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     MAIN MENU
+========================================================= -->
+
+<section id="menu" class="screen active">
+
+  <div class="logo">
+    ⚽ 2D FOOTBALL ARENA
+  </div>
+
+  <div class="subtitle">
+    FAST • PHYSICS • ONLINE-READY
+  </div>
+
+  <div class="menu-box">
+
+    <input
+      id="nickname"
+      class="menu-input"
+      maxlength="16"
+      placeholder="Enter your nickname"
+    >
+
+    <button
+      class="menu-button primary"
+      onclick="openRooms()">
+      PLAY ONLINE
+    </button>
+
+    <button
+      class="menu-button"
+      onclick="openCreateRoom()">
+      CREATE ROOM
+    </button>
+
+    <button
+      class="menu-button"
+      onclick="openRooms()">
+      BROWSE ROOMS
+    </button>
+
+    <button
+      class="menu-button"
+      onclick="showScreen('controls')">
+      CONTROLS
+    </button>
+
+    <button
+      class="menu-button"
+      onclick="showScreen('settings')">
+      SETTINGS
+    </button>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     ROOMS
+========================================================= -->
+
+<section id="rooms" class="screen">
+
+  <div class="panel">
+
+    <div class="panel-header">
+
+      <h2>SERVER BROWSER</h2>
+
+      <button
+        class="back"
+        onclick="showScreen('menu')">
+        BACK
+      </button>
+
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:15px;">
+
+      <button
+        class="small-btn"
+        onclick="refreshRooms()">
+        ↻ REFRESH
+      </button>
+
+      <button
+        class="small-btn"
+        onclick="openCreateRoom()">
+        ＋ CREATE ROOM
+      </button>
+
+    </div>
+
+    <table class="room-table">
+
+      <thead>
+        <tr>
+          <th>ROOM</th>
+          <th>PLAYERS</th>
+          <th>REGION</th>
+          <th>PING</th>
+          <th>STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody id="roomList"></tbody>
+
+    </table>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CREATE ROOM
+========================================================= -->
+
+<section id="create" class="screen">
+
+  <div class="panel">
+
+    <div class="panel-header">
+
+      <h2>CREATE ROOM</h2>
+
+      <button
+        class="back"
+        onclick="showScreen('menu')">
+        BACK
+      </button>
+
+    </div>
+
+    <div class="form-grid">
+
+      <div class="form-group">
+
+        <label>ROOM NAME</label>
+
+        <input
+          id="roomName"
+          maxlength="24"
+          value="My Football Room">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>MAX PLAYERS</label>
+
+        <select id="maxPlayers">
+
+          <option value="2">2</option>
+          <option value="4" selected>4</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>MAP</label>
+
+        <select id="mapSelect">
+
+          <option value="classic">
+            Classic Arena
+          </option>
+
+          <option value="small">
+            Small Arena
+          </option>
+
+          <option value="large">
+            Large Arena
+          </option>
+
+          <option value="training">
+            Training Arena
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>REGION</label>
+
+        <select id="regionSelect">
+
+          <option>South America</option>
+          <option>North America</option>
+          <option>Europe</option>
+          <option>Asia</option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>PASSWORD — OPTIONAL</label>
+
+        <input
+          id="roomPassword"
+          type="password"
+          maxlength="20">
+
+      </div>
+
+    </div>
+
+    <div class="lobby-actions">
+
+      <button
+        class="menu-button primary"
+        style="width:auto"
+        onclick="createRoom()">
+        CREATE ROOM
+      </button>
+
+      <button
+        class="small-btn"
+        onclick="showScreen('rooms')">
+        CANCEL
+      </button>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     LOBBY
+========================================================= -->
+
+<section id="lobby" class="screen">
+
+  <div class="panel">
+
+    <div class="panel-header">
+
+      <div>
+
+        <h2 id="lobbyRoomName">
+          ROOM
+        </h2>
+
+        <div
+          id="lobbyInfo"
+          style="color:#849ab3">
+        </div>
+
+      </div>
+
+      <button
+        class="back"
+        onclick="leaveRoom()">
+        LEAVE ROOM
+      </button>
+
+    </div>
+
+    <div class="lobby-grid">
+
+      <div class="team-box">
+
+        <div class="team-title blue">
+          🔵 BLUE TEAM
+        </div>
+
+        <div id="bluePlayers"></div>
+
+        <button
+          class="small-btn"
+          onclick="selectTeam('blue')">
+          JOIN BLUE
+        </button>
+
+      </div>
+
+      <div class="team-box">
+
+        <div class="team-title red">
+          🔴 RED TEAM
+        </div>
+
+        <div id="redPlayers"></div>
+
+        <button
+          class="small-btn"
+          onclick="selectTeam('red')">
+          JOIN RED
+        </button>
+
+      </div>
+
+    </div>
+
+    <div style="margin-top:18px;color:#8194a9">
+
+      Spectators:
+      <span id="spectators">0</span>
+
+    </div>
+
+    <div class="lobby-actions">
+
+      <button
+        class="small-btn"
+        onclick="selectTeam('spectator')">
+        SPECTATE
+      </button>
+
+      <button
+        class="menu-button primary"
+        style="width:auto"
+        onclick="startMatch()">
+        START GAME
+      </button>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CONTROLS
+========================================================= -->
+
+<section id="controls" class="screen">
+
+  <div class="panel">
+
+    <div class="panel-header">
+
+      <h2>CONTROLS</h2>
+
+      <button
+        class="back"
+        onclick="showScreen('menu')">
+        BACK
+      </button>
+
+    </div>
+
+    <div style="line-height:2;font-size:17px">
+
+      <b>W A S D</b> — Move<br>
+
+      <b>SPACE</b> — Kick / Shoot<br>
+
+      <b>ENTER</b> — Open chat<br>
+
+      <b>ESC</b> — Close chat<br>
+
+      <br>
+
+      The football is an independent physics object.
+      You do not "carry" it.
+
+      Running into it pushes it.
+
+      Changing direction changes how you contact it.
+
+      Stopping does not instantly stop the ball.
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     SETTINGS
+========================================================= -->
+
+<section id="settings" class="screen">
+
+  <div class="panel">
+
+    <div class="panel-header">
+
+      <h2>SETTINGS</h2>
+
+      <button
+        class="back"
+        onclick="showScreen('menu')">
+        BACK
+      </button>
+
+    </div>
+
+    <div class="setting">
+
+      <span>Sound Volume</span>
+
+      <input
+        id="volume"
+        type="range"
+        min="0"
+        max="1"
+        step=".05">
+
+    </div>
+
+    <div class="setting">
+
+      <span>Graphics Quality</span>
+
+      <select id="graphics">
+
+        <option value="high">
+          High
+        </option>
+
+        <option value="medium">
+          Medium
+        </option>
+
+        <option value="low">
+          Low
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="setting">
+
+      <span>Fullscreen</span>
+
+      <button
+        class="small-btn"
+        onclick="toggleFullscreen()">
+        TOGGLE
+      </button>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     GAME
+========================================================= -->
+
+<section id="game" class="screen">
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="hud">
+
+    <div class="score-team left">
+
+      BLUE
+
+      <div
+        class="player-name"
+        id="blueName">
+        PLAYER
+      </div>
+
+    </div>
+
+    <div
+      class="score"
+      id="blueScore">
+      0
+    </div>
+
+    <div
+      class="timer"
+      id="timer">
+      03:00
+    </div>
+
+    <div
+      class="score"
+      id="redScore">
+      0
+    </div>
+
+    <div class="score-team right">
+
+      RED
+
+      <div class="player-name">
+        AI
+      </div>
+
+    </div>
+
+  </div>
+
+  <div
+    id="goalBanner"
+    class="goal-banner">
+    GOAL!
+  </div>
+
+  <!-- CHAT -->
+
+  <div class="chat">
+
+    <div
+      id="chatMessages"
+      class="chat-messages">
+
+      <div class="chat-message">
+
+        <span class="name">
+          SYSTEM:
+        </span>
+
+        Welcome to Football Arena!
+
+      </div>
+
+    </div>
+
+    <div class="chat-input-row">
+
+      <input
+        id="chatInput"
+        maxlength="80"
+        placeholder="Press ENTER to chat...">
+
+      <button id="chatSend">
+        SEND
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="chat-hint">
+    ENTER = CHAT • SPACE = KICK
+  </div>
+
+</section>
+
+
+<script>
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const SETTINGS_KEY =
+  "footballArenaSettings";
+
+let settings =
+  JSON.parse(
+    localStorage.getItem(SETTINGS_KEY) || "{}"
+  );
+
+settings.volume ??= .45;
+settings.graphics ??= "high";
+
+document.getElementById("volume").value =
+  settings.volume;
+
+document.getElementById("graphics").value =
+  settings.graphics;
+
+document.getElementById("volume").oninput =
+  e=>{
+
+    settings.volume =
+      Number(e.target.value);
+
+    saveSettings();
+  };
+
+document.getElementById("graphics").onchange =
+  e=>{
+
+    settings.graphics =
+      e.target.value;
+
+    saveSettings();
+  };
+
+function saveSettings(){
+
+  localStorage.setItem(
+    SETTINGS_KEY,
+    JSON.stringify(settings)
+  );
+}
+
+
+/* =========================================================
+   NICKNAME
+========================================================= */
+
+const nicknameInput =
+  document.getElementById("nickname");
+
+nicknameInput.value =
+  localStorage.getItem(
+    "footballNickname"
+  ) || "";
+
+nicknameInput.addEventListener(
+  "input",
+  ()=>{
+
+    nicknameInput.value =
+      nicknameInput.value.slice(0,16);
+
+    localStorage.setItem(
+      "footballNickname",
+      nicknameInput.value
+    );
+  }
+);
+
+function getNickname(){
+
+  let name =
+    nicknameInput.value.trim();
+
+  if(!name){
+
+    name = "Player";
+
+    nicknameInput.value =
+      name;
+  }
+
+  localStorage.setItem(
+    "footballNickname",
+    name
+  );
+
+  return name;
+}
+
+
+/* =========================================================
+   SCREEN
+========================================================= */
+
+function showScreen(id){
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(
+      s=>s.classList.remove("active")
+    );
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+}
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+let audioCtx = null;
+
+function initAudio(){
+
+  if(!audioCtx){
+
+    audioCtx =
+      new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
+  }
+
+  if(
+    audioCtx.state === "suspended"
+  ){
+
+    audioCtx.resume();
+  }
+}
+
+function sound(
+  frequency,
+  duration=.08,
+  type="square",
+  volume=.04
+){
+
+  if(settings.volume <= 0){
+    return;
+  }
+
+  initAudio();
+
+  const osc =
+    audioCtx.createOscillator();
+
+  const gain =
+    audioCtx.createGain();
+
+  osc.type = type;
+
+  osc.frequency.value =
+    frequency;
+
+  gain.gain.setValueAtTime(
+    volume*settings.volume,
+    audioCtx.currentTime
+  );
+
+  gain.gain.exponentialRampToValueAtTime(
+    .001,
+    audioCtx.currentTime+duration
+  );
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+
+  osc.stop(
+    audioCtx.currentTime+duration
+  );
+}
+
+function kickSound(){
+
+  sound(
+    170,
+    .07,
+    "square",
+    .055
+  );
+}
+
+function wallSound(){
+
+  sound(
+    90,
+    .035,
+    "triangle",
+    .025
+  );
+}
+
+function goalSound(){
+
+  sound(
+    250,
+    .12,
+    "square",
+    .08
+  );
+
+  setTimeout(
+    ()=>sound(
+      500,
+      .18,
+      "square",
+      .08
+    ),
+    90
+  );
+
+  setTimeout(
+    ()=>sound(
+      800,
+      .25,
+      "square",
+      .06
+    ),
+    190
+  );
+}
+
+function buttonSound(){
+
+  sound(
+    450,
+    .04,
+    "square",
+    .025
+  );
+}
+
+
+/* =========================================================
+   ROOM SYSTEM
+========================================================= */
+
+let rooms = [
+
+  {
+    name:"Neon Football",
+    players:1,
+    max:4,
+    region:"South America",
+    ping:42,
+    private:false,
+    map:"classic"
+  },
+
+  {
+    name:"Fast Match",
+    players:2,
+    max:4,
+    region:"North America",
+    ping:81,
+    private:false,
+    map:"small"
+  },
+
+  {
+    name:"EU Champions",
+    players:3,
+    max:6,
+    region:"Europe",
+    ping:126,
+    private:true,
+    map:"large"
+  },
+
+  {
+    name:"Training",
+    players:1,
+    max:2,
+    region:"South America",
+    ping:37,
+    private:false,
+    map:"training"
+  }
+
+];
+
+let currentRoom = null;
+let currentTeam = "blue";
+
+function openRooms(){
+
+  getNickname();
+
+  refreshRooms();
+
+  showScreen("rooms");
+}
+
+function refreshRooms(){
+
+  const tbody =
+    document.getElementById(
+      "roomList"
+    );
+
+  tbody.innerHTML = "";
+
+  rooms.forEach(
+    (room,index)=>{
+
+      const tr =
+        document.createElement("tr");
+
+      tr.className =
+        "room-row";
+
+      tr.innerHTML = `
+
+        <td>
+
+          <b>
+            ${escapeHTML(room.name)}
+          </b>
+
+          ${room.private ? " 🔒":""}
+
+        </td>
+
+        <td>
+          ${room.players}/${room.max}
+        </td>
+
+        <td>
+          ${room.region}
+        </td>
+
+        <td>
+          ${room.ping} ms
+        </td>
+
+        <td>
+          ${
+            room.players >= room.max
+              ? "FULL"
+              : "OPEN"
+          }
+        </td>
+
+        <td>
+
+          <button
+            class="join-btn"
+            ${
+              room.players >= room.max
+                ? "disabled"
+                : ""
+            }
+            onclick="joinRoom(${index})">
+
+            JOIN
+
+          </button>
+
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    }
+  );
+
+  buttonSound();
+}
+
+function openCreateRoom(){
+
+  showScreen("create");
+}
+
+function createRoom(){
+
+  const name =
+    document
+      .getElementById("roomName")
+      .value.trim()
+      || "New Room";
+
+  const max =
+    Number(
+      document.getElementById(
+        "maxPlayers"
+      ).value
+    );
+
+  const map =
+    document.getElementById(
+      "mapSelect"
+    ).value;
+
+  const region =
+    document.getElementById(
+      "regionSelect"
+    ).value;
+
+  const password =
+    document.getElementById(
+      "roomPassword"
+    ).value;
+
+  currentRoom = {
+
+    name,
+
+    players:1,
+
+    max,
+
+    region,
+
+    ping:25,
+
+    private:!!password,
+
+    password,
+
+    map
+  };
+
+  rooms.push(currentRoom);
+
+  currentTeam = "blue";
+
+  enterLobby();
+
+  buttonSound();
+}
+
+function joinRoom(index){
+
+  const room =
+    rooms[index];
+
+  if(
+    room.players >= room.max
+  ){
+    return;
+  }
+
+  if(room.private){
+
+    const password =
+      prompt(
+        "Enter room password:"
+      );
+
+    if(password !== room.password){
+
+      alert(
+        "Incorrect password."
+      );
+
+      return;
+    }
+  }
+
+  room.players++;
+
+  currentRoom =
+    room;
+
+  currentTeam =
+    "blue";
+
+  enterLobby();
+
+  buttonSound();
+}
+
+function leaveRoom(){
+
+  if(currentRoom){
+
+    if(currentRoom.players>0){
+
+      currentRoom.players--;
+    }
+  }
+
+  currentRoom =
+    null;
+
+  showScreen("rooms");
+
+  refreshRooms();
+}
+
+function enterLobby(){
+
+  document
+    .getElementById(
+      "lobbyRoomName"
+    )
+    .textContent =
+      currentRoom.name;
+
+  document
+    .getElementById(
+      "lobbyInfo"
+    )
+    .textContent =
+      `${currentRoom.map.toUpperCase()} • `+
+      `${currentRoom.players}/${currentRoom.max} players • `+
+      `${currentRoom.region}`;
+
+  updateLobby();
+
+  showScreen("lobby");
+}
+
+function selectTeam(team){
+
+  currentTeam =
+    team;
+
+  updateLobby();
+
+  buttonSound();
+}
+
+function updateLobby(){
+
+  const blue =
+    document.getElementById(
+      "bluePlayers"
+    );
+
+  const red =
+    document.getElementById(
+      "redPlayers"
+    );
+
+  blue.innerHTML="";
+  red.innerHTML="";
+
+  if(currentTeam==="blue"){
+
+    blue.innerHTML =
+      `<div class="player-line">
+        ${escapeHTML(getNickname())} ⭐
+      </div>`;
+  }
+
+  if(currentTeam==="red"){
+
+    red.innerHTML =
+      `<div class="player-line">
+        ${escapeHTML(getNickname())} ⭐
+      </div>`;
+  }
+
+  if(currentTeam!=="red"){
+
+    red.innerHTML +=
+      `<div class="player-line">
+        🤖 ArenaBot
+      </div>`;
+  }
+
+  if(currentTeam!=="blue"){
+
+    blue.innerHTML +=
+      `<div class="player-line">
+        🤖 ArenaBot
+      </div>`;
+  }
+
+  document
+    .getElementById(
+      "spectators"
+    )
+    .textContent =
+      currentTeam==="spectator"
+        ? "1"
+        : "0";
+}
+
+
+/* =========================================================
+   MAPS
+========================================================= */
+
+const MAPS = {
+
+  classic:{
+    width:1400,
+    height:700,
+    goalHeight:190,
+    goalDepth:70
+  },
+
+  small:{
+    width:1150,
+    height:600,
+    goalHeight:170,
+    goalDepth:65
+  },
+
+  large:{
+    width:1700,
+    height:760,
+    goalHeight:210,
+    goalDepth:80
+  },
+
+  training:{
+    width:1250,
+    height:620,
+    goalHeight:160,
+    goalDepth:60
+  }
+
+};
+
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
+const canvas =
+  document.getElementById(
+    "gameCanvas"
+  );
+
+const ctx =
+  canvas.getContext("2d");
+
+function resizeCanvas(){
+
+  const dpr =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  canvas.width =
+    window.innerWidth*dpr;
+
+  canvas.height =
+    window.innerHeight*dpr;
+
+  canvas.style.width =
+    window.innerWidth+"px";
+
+  canvas.style.height =
+    window.innerHeight+"px";
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+}
+
+window.addEventListener(
+  "resize",
+  resizeCanvas
+);
+
+resizeCanvas();
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+let game = {
+
+  running:false,
+
+  blueScore:0,
+
+  redScore:0,
+
+  time:180,
+
+  goalPause:0,
+
+  goalText:"",
+
+  lastTime:0
+};
+
+
+/* =========================================================
+   PLAYER PHYSICS
+========================================================= */
+
+/*
+  These values intentionally resemble the
+  disc-based style of physics used by HaxBall:
+  acceleration + damping + mass-like collision.
+*/
+
+const PLAYER_PHYSICS = {
+
+  radius:20,
+
+  acceleration:.105,
+
+  damping:.965,
+
+  bounce:.45,
+
+  kickStrength:7.0,
+
+  kickRadius:48
+
+};
+
+const BALL_PHYSICS = {
+
+  radius:10,
+
+  inverseMass:1.0,
+
+  damping:.992,
+
+  bounce:.78,
+
+  maxSpeed:18
+
+};
+
+function makePlayer(
+  x,
+  y,
+  team,
+  name
+){
+
+  return {
+
+    x,
+    y,
+
+    vx:0,
+    vy:0,
+
+    radius:
+      PLAYER_PHYSICS.radius,
+
+    team,
+
+    name,
+
+    kickCooldown:0,
+
+    kickFlash:0,
+
+    lastKick:0,
+
+    kickHeld:false
+  };
+}
+
+let player;
+let ai;
+
+
+/* =========================================================
+   INDEPENDENT BALL
+========================================================= */
+
+/*
+  IMPORTANT:
+
+  There is deliberately NO "owner".
+
+  The ball never gets attached to the player.
+
+  It is always:
+
+      x / y
+      vx / vy
+
+  and collision physics determines
+  what happens to it.
+*/
+
+let ball = {
+
+  x:700,
+
+  y:350,
+
+  vx:0,
+
+  vy:0,
+
+  radius:
+    BALL_PHYSICS.radius,
+
+  spin:0
+};
+
+
+/* =========================================================
+   START MATCH
+========================================================= */
+
+function startMatch(){
+
+  if(!currentRoom){
+
+    currentRoom = {
+
+      name:"Local Match",
+
+      map:"classic"
+    };
+  }
+
+  initAudio();
+
+  const map =
+    MAPS[
+      currentRoom.map
+    ] ||
+    MAPS.classic;
+
+  game.running = true;
+
+  game.blueScore = 0;
+
+  game.redScore = 0;
+
+  game.time = 180;
+
+  game.goalPause = 0;
+
+  game.lastTime = 0;
+
+  player =
+    makePlayer(
+      map.width*.25,
+      map.height/2,
+      currentTeam==="red"
+        ? "red"
+        : "blue",
+      getNickname()
+    );
+
+  ai =
+    makePlayer(
+      map.width*.75,
+      map.height/2,
+      currentTeam==="red"
+        ? "blue"
+        : "red",
+      "ArenaBot"
+    );
+
+  resetBall();
+
+  document
+    .getElementById(
+      "blueName"
+    )
+    .textContent =
+      player.team==="blue"
+        ? player.name
+        : ai.name;
+
+  updateScore();
+
+  showScreen("game");
+
+  addChat(
+    "SYSTEM",
+    "Match started! Good luck!"
+  );
+
+  sound(
+    500,
+    .15,
+    "square",
+    .05
+  );
+
+  requestAnimationFrame(
+    gameLoop
+  );
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetBall(){
+
+  const map =
+    MAPS[
+      currentRoom?.map ||
+      "classic"
+    ];
+
+  ball.x =
+    map.width/2;
+
+  ball.y =
+    map.height/2;
+
+  ball.vx=0;
+
+  ball.vy=0;
+
+  ball.spin=0;
+
+  player.x =
+    map.width*.25;
+
+  player.y =
+    map.height/2;
+
+  ai.x =
+    map.width*.75;
+
+  ai.y =
+    map.height/2;
+
+  player.vx=0;
+  player.vy=0;
+
+  ai.vx=0;
+  ai.vy=0;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+const keys = {};
+
+window.addEventListener(
+  "keydown",
+  e=>{
+
+    if(
+      [
+        "Space",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight"
+      ].includes(e.code)
+    ){
+      e.preventDefault();
+    }
+
+    if(
+      document.activeElement ===
+      document.getElementById(
+        "chatInput"
+      )
+    ){
+      return;
+    }
+
+    keys[e.code]=true;
+
+    if(e.code==="Space"){
+
+      e.preventDefault();
+
+      kickPlayer(player);
+    }
+
+    if(e.code==="Enter"){
+
+      openChat();
+    }
+
+    if(e.code==="Escape"){
+
+      closeChat();
+    }
+  }
+);
+
+window.addEventListener(
+  "keyup",
+  e=>{
+
+    keys[e.code]=false;
+  }
+);
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+const chatInput =
+  document.getElementById(
+    "chatInput"
+  );
+
+function openChat(){
+
+  chatInput.focus();
+}
+
+function closeChat(){
+
+  chatInput.blur();
+}
+
+function sendChat(){
+
+  const text =
+    chatInput.value.trim();
+
+  if(!text){
+    return;
+  }
+
+  addChat(
+    getNickname(),
+    text
+  );
+
+  chatInput.value="";
+
+  closeChat();
+}
+
+function addChat(
+  name,
+  text
+){
+
+  const box =
+    document.getElementById(
+      "chatMessages"
+    );
+
+  const msg =
+    document.createElement(
+      "div"
+    );
+
+  msg.className =
+    "chat-message";
+
+  msg.innerHTML =
+    `<span class="name">
+      ${escapeHTML(name)}:
+    </span>
+    ${escapeHTML(text)}`;
+
+  box.appendChild(msg);
+
+  while(
+    box.children.length>40
+  ){
+
+    box.removeChild(
+      box.firstChild
+    );
+  }
+
+  box.scrollTop =
+    box.scrollHeight;
+}
+
+document
+  .getElementById("chatSend")
+  .addEventListener(
+    "click",
+    sendChat
+  );
+
+chatInput.addEventListener(
+  "keydown",
+  e=>{
+
+    e.stopPropagation();
+
+    if(e.key==="Enter"){
+      sendChat();
+    }
+
+    if(e.key==="Escape"){
+      closeChat();
+    }
+  }
+);
+
+
+/* =========================================================
+   PLAYER MOVEMENT
+========================================================= */
+
+function updatePlayer(dt){
+
+  if(
+    !game.running ||
+    game.goalPause>0
+  ){
+    return;
+  }
+
+  let dx=0;
+  let dy=0;
+
+  if(keys.KeyW) dy-=1;
+  if(keys.KeyS) dy+=1;
+  if(keys.KeyA) dx-=1;
+  if(keys.KeyD) dx+=1;
+
+  const length =
+    Math.hypot(dx,dy);
+
+  if(length>0){
+
+    dx/=length;
+    dy/=length;
+
+    /*
+      Acceleration instead of instant
+      maximum-speed movement.
+    */
+
+    player.vx +=
+      dx*
+      PLAYER_PHYSICS.acceleration*
+      60*
+      dt;
+
+    player.vy +=
+      dy*
+      PLAYER_PHYSICS.acceleration*
+      60*
+      dt;
+  }
+
+  const maxSpeed=5.7;
+
+  const speed =
+    Math.hypot(
+      player.vx,
+      player.vy
+    );
+
+  if(speed>maxSpeed){
+
+    player.vx =
+      player.vx/speed*
+      maxSpeed;
+
+    player.vy =
+      player.vy/speed*
+      maxSpeed;
+  }
+
+  /*
+    HaxBall-style damping feel:
+    player keeps some momentum rather
+    than stopping instantly.
+  */
+
+  player.vx *=
+    Math.pow(
+      PLAYER_PHYSICS.damping,
+      dt*60
+    );
+
+  player.vy *=
+    Math.pow(
+      PLAYER_PHYSICS.damping,
+      dt*60
+    );
+
+  player.x +=
+    player.vx*
+    dt*60;
+
+  player.y +=
+    player.vy*
+    dt*60;
+
+  constrainPlayer(player);
+}
+
+
+/* =========================================================
+   AI
+========================================================= */
+
+function updateAI(dt){
+
+  if(game.goalPause>0){
+    return;
+  }
+
+  const map =
+    MAPS[
+      currentRoom?.map ||
+      "classic"
+    ];
+
+  let targetX =
+    ball.x;
+
+  let targetY =
+    ball.y;
+
+  const ownGoalX =
+    ai.team==="red"
+      ? map.width
+      : 0;
+
+  const defensive =
+    Math.abs(
+      ball.x-ownGoalX
+    )<
+    map.width*.28;
+
+  if(defensive){
+
+    targetX =
+      ownGoalX+
+      (
+        ai.team==="red"
+          ? -120
+          : 120
+      );
+
+    targetY =
+      ball.y;
+  }
+
+  let dx =
+    targetX-ai.x;
+
+  let dy =
+    targetY-ai.y;
+
+  const distance =
+    Math.hypot(dx,dy);
+
+  if(distance>2){
+
+    dx/=distance;
+    dy/=distance;
+
+    ai.vx +=
+      dx*.105*
+      60*
+      dt;
+
+    ai.vy +=
+      dy*.105*
+      60*
+      dt;
+  }
+
+  const max=4.8;
+
+  const speed =
+    Math.hypot(
+      ai.vx,
+      ai.vy
+    );
+
+  if(speed>max){
+
+    ai.vx =
+      ai.vx/speed*max;
+
+    ai.vy =
+      ai.vy/speed*max;
+  }
+
+  ai.vx *=
+    Math.pow(
+      PLAYER_PHYSICS.damping,
+      dt*60
+    );
+
+  ai.vy *=
+    Math.pow(
+      PLAYER_PHYSICS.damping,
+      dt*60
+    );
+
+  ai.x +=
+    ai.vx*dt*60;
+
+  ai.y +=
+    ai.vy*dt*60;
+
+  constrainPlayer(ai);
+
+  /*
+    AI also uses physical contact.
+
+    There is no AI ball ownership.
+  */
+
+  const ballDistance =
+    distanceBetween(
+      ai,
+      ball
+    );
+
+  if(
+    ballDistance<
+      ai.radius+
+      ball.radius+
+      12
+  ){
+
+    /*
+      Occasionally kick.
+    */
+
+    if(
+      Math.random()<.025
+    ){
+
+      kickPlayer(ai);
+    }
+  }
+}
+
+
+/* =========================================================
+   CONSTRAIN PLAYER
+========================================================= */
+
+function constrainPlayer(p){
+
+  const map =
+    MAPS[
+      currentRoom?.map ||
+      "classic"
+    ];
+
+  const margin=30;
+
+  p.x =
+    Math.max(
+      margin,
+      Math.min(
+        map.width-margin,
+        p.x
+      )
+    );
+
+  p.y =
+    Math.max(
+      margin,
+      Math.min(
+        map.height-margin,
+        p.y
+      )
+    );
+}
+
+
+/* =========================================================
+   PLAYER / BALL PHYSICS
+========================================================= */
+
+/*
+  This is the important part.
+
+  The ball is NOT attached.
+
+  The player and ball are two separate
+  moving circles.
+
+  When they overlap:
+
+      1. Separate them.
+      2. Calculate the relative velocity.
+      3. Apply collision impulse.
+      4. Add a small "dribble" influence
+         based on player movement.
+
+  That produces the pushing/dribbling
+  effect rather than magnetic possession.
+*/
+
+function resolvePlayerBallCollision(p){
+
+  const dx =
+    ball.x-p.x;
+
+  const dy =
+    ball.y-p.y;
+
+  let distance =
+    Math.hypot(dx,dy);
+
+  const minimum =
+    p.radius+
+    ball.radius;
+
+  if(distance>=minimum){
+    return;
+  }
+
+  if(distance<.0001){
+
+    distance=.0001;
+  }
+
+  const nx =
+    dx/distance;
+
+  const ny =
+    dy/distance;
+
+  /*
+    Separate the discs.
+
+    Because the ball has higher inverse mass,
+    it moves more than the player.
+  */
+
+  const penetration =
+    minimum-distance;
+
+  const ballShare=.78;
+  const playerShare=.22;
+
+  ball.x +=
+    nx*
+    penetration*
+    ballShare;
+
+  ball.y +=
+    ny*
+    penetration*
+    ballShare;
+
+  p.x -=
+    nx*
+    penetration*
+    playerShare;
+
+  p.y -=
+    ny*
+    penetration*
+    playerShare;
+
+  /*
+    Relative velocity along the collision normal.
+  */
+
+  const relativeVelocity =
+    (ball.vx-p.vx)*nx+
+    (ball.vy-p.vy)*ny;
+
+  /*
+    If moving toward each other,
+    bounce using a disc collision impulse.
+  */
+
+  if(relativeVelocity<0){
+
+    const restitution =
+      .62;
+
+    const impulse =
+      -(1+restitution)*
+      relativeVelocity;
+
+    ball.vx +=
+      nx*impulse;
+
+    ball.vy +=
+      ny*impulse;
+
+    p.vx -=
+      nx*impulse*.35;
+
+    p.vy -=
+      ny*impulse*.35;
+  }
+
+  /*
+    DRIBBLING EFFECT
+    ----------------
+
+    This is deliberately subtle.
+
+    The player does not grab the ball.
+
+    Instead, if the player is moving,
+    some of that movement gets transferred
+    tangentially into the ball.
+
+    This makes the ball "follow" the player
+    through repeated physical contact.
+  */
+
+  const playerSpeed =
+    Math.hypot(
+      p.vx,
+      p.vy
+    );
+
+  if(playerSpeed>.3){
+
+    const tangentX =
+      p.vx/playerSpeed;
+
+    const tangentY =
+      p.vy/playerSpeed;
+
+    const contactForce =
+      .055*
+      playerSpeed;
+
+    ball.vx +=
+      tangentX*
+      contactForce;
+
+    ball.vy +=
+      tangentY*
+      contactForce;
+  }
+
+  /*
+    Very close slow ball = controllable
+    dribble instead of jitter.
+  */
+
+  const speed =
+    Math.hypot(
+      ball.vx,
+      ball.vy
+    );
+
+  if(
+    distance<
+      minimum+8 &&
+    playerSpeed>1 &&
+    speed<4.5
+  ){
+
+    const influence=.075;
+
+    ball.vx +=
+      p.vx*influence;
+
+    ball.vy +=
+      p.vy*influence;
+  }
+}
+
+
+/* =========================================================
+   PLAYER VS PLAYER
+========================================================= */
+
+function collidePlayers(){
+
+  const dx =
+    ai.x-player.x;
+
+  const dy =
+    ai.y-player.y;
+
+  let distance =
+    Math.hypot(dx,dy);
+
+  const minimum =
+    player.radius+
+    ai.radius;
+
+  if(
+    distance>=minimum ||
+    distance<.0001
+  ){
+    return;
+  }
+
+  const nx =
+    dx/distance;
+
+  const ny =
+    dy/distance;
+
+  const overlap =
+    minimum-distance;
+
+  player.x -=
+    nx*overlap*.5;
+
+  player.y -=
+    ny*overlap*.5;
+
+  ai.x +=
+    nx*overlap*.5;
+
+  ai.y +=
+    ny*overlap*.5;
+
+  const relative =
+    (ai.vx-player.vx)*nx+
+    (ai.vy-player.vy)*ny;
+
+  if(relative<0){
+
+    const impulse =
+      -relative*.5;
+
+    player.vx -=
+      nx*impulse;
+
+    player.vy -=
+      ny*impulse;
+
+    ai.vx +=
+      nx*impulse;
+
+    ai.vy +=
+      ny*impulse;
+  }
+
+  constrainPlayer(player);
+  constrainPlayer(ai);
+}
+
+
+/* =========================================================
+   KICK
+========================================================= */
+
+function kickPlayer(p){
+
+  if(
+    !game.running ||
+    game.goalPause>0
+  ){
+    return;
+  }
+
+  const now =
+    performance.now();
+
+  if(
+    now-p.lastKick<
+    330
+  ){
+    return;
+  }
+
+  const dx =
+    ball.x-p.x;
+
+  const dy =
+    ball.y-p.y;
+
+  const distance =
+    Math.hypot(dx,dy);
+
+  /*
+    Kick only works when the player
+    is physically close enough.
+  */
+
+  if(
+    distance>
+      p.radius+
+      ball.radius+
+      PLAYER_PHYSICS.kickRadius
+  ){
+    return;
+  }
+
+  p.lastKick =
+    now;
+
+  p.kickFlash =
+    .24;
+
+  /*
+    Kick direction.
+
+    Prefer player movement direction.
+    If standing still, use the direction
+    from player to ball.
+  */
+
+  let kx =
+    p.vx;
+
+  let ky =
+    p.vy;
+
+  let length =
+    Math.hypot(kx,ky);
+
+  if(length<.15){
+
+    kx =
+      dx;
+
+    ky =
+      dy;
+
+    length =
+      Math.hypot(
+        kx,
+        ky
+      );
+  }
+
+  if(length<.01){
+
+    kx =
+      p.team==="blue"
+        ? 1
+        : -1;
+
+    ky=0;
+
+    length=1;
+  }
+
+  kx/=length;
+  ky/=length;
+
+  /*
+    Do NOT move/teleport the ball.
+
+    Just apply an impulse to its existing
+    velocity.
+  */
+
+  const kickPower =
+    PLAYER_PHYSICS.kickStrength;
+
+  ball.vx +=
+    kx*kickPower;
+
+  ball.vy +=
+    ky*kickPower;
+
+  /*
+    A tiny kickback gives the player
+    a more physical feel.
+  */
+
+  p.vx -=
+    kx*.16;
+
+  p.vy -=
+    ky*.16;
+
+  /*
+    Prevent the ball from becoming
+    absurdly fast.
+  */
+
+  limitBallSpeed();
+
+  ball.spin +=
+    (Math.random()-.5)*1.2;
+
+  kickSound();
+}
+
+
+/* =========================================================
+   BALL PHYSICS
+========================================================= */
+
+function updateBall(dt){
+
+  /*
+    THE BALL ALWAYS MOVES INDEPENDENTLY.
+
+    No owner.
+    No attachment.
+    No magnetic following.
+  */
+
+  ball.x +=
+    ball.vx*
+    dt*
+    60;
+
+  ball.y +=
+    ball.vy*
+    dt*
+    60;
+
+  /*
+    Ball damping.
+
+    HaxBall-style physics uses damping
+    to make the ball gradually lose speed.
+  */
+
+  ball.vx *=
+    Math.pow(
+      BALL_PHYSICS.damping,
+      dt*60
+    );
+
+  ball.vy *=
+    Math.pow(
+      BALL_PHYSICS.damping,
+      dt*60
+    );
+
+  /*
+    Visual spin.
+  */
+
+  ball.spin +=
+    (
+      Math.abs(ball.vx)+
+      Math.abs(ball.vy)
+    )*.001;
+
+  const map =
+    MAPS[
+      currentRoom?.map ||
+      "classic"
+    ];
+
+  const goalTop =
+    map.height/2-
+    map.goalHeight/2;
+
+  const goalBottom =
+    map.height/2+
+    map.goalHeight/2;
+
+  /*
+    TOP WALL
+  */
+
+  if(
+    ball.y-ball.radius<0
+  ){
+
+    ball.y=
+      ball.radius;
+
+    ball.vy =
+      Math.abs(ball.vy)*
+      BALL_PHYSICS.bounce;
+
+    wallSound();
+  }
+
+  /*
+    BOTTOM WALL
+  */
+
+  if(
+    ball.y+ball.radius>
+    map.height
+  ){
+
+    ball.y=
+      map.height-
+      ball.radius;
+
+    ball.vy =
+      -Math.abs(ball.vy)*
+      BALL_PHYSICS.bounce;
+
+    wallSound();
+  }
+
+  /*
+    LEFT WALL
+    Goal opening stays open.
+  */
+
+  if(
+    ball.x-ball.radius<0 &&
+    !(
+      ball.y>goalTop &&
+      ball.y<goalBottom
+    )
+  ){
+
+    ball.x=
+      ball.radius;
+
+    ball.vx =
+      Math.abs(ball.vx)*
+      BALL_PHYSICS.bounce;
+
+    wallSound();
+  }
+
+  /*
+    RIGHT WALL
+  */
+
+  if(
+    ball.x+ball.radius>
+    map.width &&
+    !(
+      ball.y>goalTop &&
+      ball.y<goalBottom
+    )
+  ){
+
+    ball.x=
+      map.width-
+      ball.radius;
+
+    ball.vx =
+      -Math.abs(ball.vx)*
+      BALL_PHYSICS.bounce;
+
+    wallSound();
+  }
+
+  /*
+    PLAYER/BALL COLLISION.
+
+    Notice that this happens every frame
+    even though there is no possession state.
+  */
+
+  resolvePlayerBallCollision(player);
+
+  resolvePlayerBallCollision(ai);
+
+  /*
+    GOALS
+  */
+
+  if(
+    ball.x<
+      -ball.radius*1.5 &&
+    ball.y>goalTop &&
+    ball.y<goalBottom
+  ){
+
+    scoreGoal("red");
+
+    return;
+  }
+
+  if(
+    ball.x>
+      map.width+
+      ball.radius*1.5 &&
+    ball.y>goalTop &&
+    ball.y<goalBottom
+  ){
+
+    scoreGoal("blue");
+
+    return;
+  }
+
+  limitBallSpeed();
+}
+
+
+/* =========================================================
+   BALL SPEED
+========================================================= */
+
+function limitBallSpeed(){
+
+  const speed =
+    Math.hypot(
+      ball.vx,
+      ball.vy
+    );
+
+  if(
+    speed>
+    BALL_PHYSICS.maxSpeed
+  ){
+
+    ball.vx =
+      ball.vx/
+      speed*
+      BALL_PHYSICS.maxSpeed;
+
+    ball.vy =
+      ball.vy/
+      speed*
+      BALL_PHYSICS.maxSpeed;
+  }
+}
+
+
+/* =========================================================
+   GOAL
+========================================================= */
+
+function scoreGoal(team){
+
+  if(game.goalPause>0){
+    return;
+  }
+
+  game.goalPause=
+    1.6;
+
+  if(team==="blue"){
+
+    game.blueScore++;
+
+    game.goalText=
+      "BLUE GOAL!";
+
+  }else{
+
+    game.redScore++;
+
+    game.goalText=
+      "RED GOAL!";
+  }
+
+  updateScore();
+
+  const banner =
+    document.getElementById(
+      "goalBanner"
+    );
+
+  banner.textContent =
+    game.goalText;
+
+  banner.classList.remove(
+    "show"
+  );
+
+  void banner.offsetWidth;
+
+  banner.classList.add(
+    "show"
+  );
+
+  goalSound();
+}
+
+
+/* =========================================================
+   SCORE
+========================================================= */
+
+function updateScore(){
+
+  document
+    .getElementById(
+      "blueScore"
+    )
+    .textContent =
+      game.blueScore;
+
+  document
+    .getElementById(
+      "redScore"
+    )
+    .textContent =
+      game.redScore;
+}
+
+
+/* =========================================================
+   UPDATE GAME
+========================================================= */
+
+function updateGame(dt){
+
+  if(!game.running){
+    return;
+  }
+
+  if(game.goalPause>0){
+
+    game.goalPause-=dt;
+
+    if(game.goalPause<=0){
+
+      resetBall();
+    }
+
+    return;
+  }
+
+  game.time-=dt;
+
+  if(game.time<=0){
+
+    game.time=0;
+
+    finishMatch();
+
+    return;
+  }
+
+  updatePlayer(dt);
+
+  updateAI(dt);
+
+  collidePlayers();
+
+  updateBall(dt);
+
+  if(player.kickFlash>0){
+
+    player.kickFlash-=dt;
+  }
+
+  if(ai.kickFlash>0){
+
+    ai.kickFlash-=dt;
+  }
+
+  updateTimer();
+}
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+function updateTimer(){
+
+  const total =
+    Math.ceil(
+      game.time
+    );
+
+  const minutes =
+    Math.floor(
+      total/60
+    );
+
+  const seconds =
+    total%60;
+
+  document
+    .getElementById(
+      "timer"
+    )
+    .textContent =
+      `${String(minutes)
+        .padStart(2,"0")}:`+
+      `${String(seconds)
+        .padStart(2,"0")}`;
+}
+
+
+/* =========================================================
+   FINISH
+========================================================= */
+
+function finishMatch(){
+
+  game.running=false;
+
+  let result =
+    "MATCH FINISHED";
+
+  if(
+    game.blueScore>
+    game.redScore
+  ){
+
+    result =
+      "BLUE WINS";
+  }
+
+  if(
+    game.redScore>
+    game.blueScore
+  ){
+
+    result =
+      "RED WINS";
+  }
+
+  if(
+    game.blueScore===
+    game.redScore
+  ){
+
+    result =
+      "DRAW";
+  }
+
+  addChat(
+    "SYSTEM",
+    `${result} — `+
+    `${game.blueScore}:`+
+    `${game.redScore}`
+  );
+
+  setTimeout(
+    ()=>{
+      showScreen("lobby");
+      updateLobby();
+    },
+    1200
+  );
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render(){
+
+  const map =
+    MAPS[
+      currentRoom?.map ||
+      "classic"
+    ];
+
+  const screenW =
+    window.innerWidth;
+
+  const screenH =
+    window.innerHeight;
+
+  ctx.clearRect(
+    0,
+    0,
+    screenW,
+    screenH
+  );
+
+  const padding=25;
+
+  const fieldScale =
+    Math.min(
+      (screenW-padding*2)/
+        map.width,
+
+      (screenH-padding*2)/
+        map.height
+    );
+
+  const fieldW =
+    map.width*
+    fieldScale;
+
+  const fieldH =
+    map.height*
+    fieldScale;
+
+  const offsetX =
+    (screenW-fieldW)/2;
+
+  const offsetY =
+    (screenH-fieldH)/2;
+
+  ctx.save();
+
+  ctx.translate(
+    offsetX,
+    offsetY
+  );
+
+  ctx.scale(
+    fieldScale,
+    fieldScale
+  );
+
+  drawField(map);
+
+  drawGoals(map);
+
+  drawPlayer(player);
+
+  drawPlayer(ai);
+
+  drawBall();
+
+  ctx.restore();
+}
+
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+function drawField(map){
+
+  ctx.fillStyle=
+    "#020508";
+
+  roundRect(
+    -15,
+    -15,
+    map.width+30,
+    map.height+30,
+    30
+  );
+
+  ctx.fill();
+
+  ctx.fillStyle=
+    "#12672f";
+
+  roundRect(
+    0,
+    0,
+    map.width,
+    map.height,
+    25
+  );
+
+  ctx.fill();
+
+  for(
+    let x=0;
+    x<map.width;
+    x+=110
+  ){
+
+    ctx.fillStyle =
+      x%220===0
+        ? "rgba(255,255,255,.025)"
+        : "rgba(0,0,0,.025)";
+
+    ctx.fillRect(
+      x,
+      0,
+      110,
+      map.height
+    );
+  }
+
+  ctx.strokeStyle=
+    "rgba(255,255,255,.72)";
+
+  ctx.lineWidth=5;
+
+  roundRect(
+    4,
+    4,
+    map.width-8,
+    map.height-8,
+    22
+  );
+
+  ctx.stroke();
+
+  /*
+    Center line.
+  */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    map.width/2,
+    8
+  );
+
+  ctx.lineTo(
+    map.width/2,
+    map.height-8
+  );
+
+  ctx.stroke();
+
+  /*
+    Center circle.
+  */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    map.width/2,
+    map.height/2,
+    100,
+    0,
+    Math.PI*2
+  );
+
+  ctx.stroke();
+
+  ctx.fillStyle="#fff";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    map.width/2,
+    map.height/2,
+    5,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  /*
+    Penalty areas.
+  */
+
+  const areaW=170;
+
+  const areaH=
+    map.goalHeight+100;
+
+  ctx.strokeRect(
+    0,
+    map.height/2-areaH/2,
+    areaW,
+    areaH
+  );
+
+  ctx.strokeRect(
+    map.width-areaW,
+    map.height/2-areaH/2,
+    areaW,
+    areaH
+  );
+
+  /*
+    Spots.
+  */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    115,
+    map.height/2,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  ctx.beginPath();
+
+  ctx.arc(
+    map.width-115,
+    map.height/2,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+}
+
+
+/* =========================================================
+   GOALS
+========================================================= */
+
+function drawGoals(map){
+
+  const top =
+    map.height/2-
+    map.goalHeight/2;
+
+  drawSingleGoal(
+    0,
+    top,
+    map.goalDepth,
+    map.goalHeight,
+    true
+  );
+
+  drawSingleGoal(
+    map.width,
+    top,
+    map.goalDepth,
+    map.goalHeight,
+    false
+  );
+}
+
+function drawSingleGoal(
+  x,
+  y,
+  depth,
+  height,
+  left
+){
+
+  ctx.save();
+
+  ctx.strokeStyle=
+    "#eaf7ff";
+
+  ctx.lineWidth=8;
+
+  ctx.shadowBlur=10;
+
+  ctx.shadowColor="#fff";
+
+  const direction =
+    left ? -1:1;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x,
+    y
+  );
+
+  ctx.lineTo(
+    x+direction*depth,
+    y
+  );
+
+  ctx.moveTo(
+    x,
+    y+height
+  );
+
+  ctx.lineTo(
+    x+direction*depth,
+    y+height
+  );
+
+  ctx.stroke();
+
+  /*
+    Net.
+  */
+
+  ctx.strokeStyle=
+    "rgba(230,240,255,.22)";
+
+  ctx.lineWidth=2;
+
+  for(
+    let i=0;
+    i<=height;
+    i+=18
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x,
+      y+i
+    );
+
+    ctx.lineTo(
+      x+direction*depth,
+      y+i
+    );
+
+    ctx.stroke();
+  }
+
+  for(
+    let i=0;
+    i<=depth;
+    i+=15
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x+direction*i,
+      y
+    );
+
+    ctx.lineTo(
+      x+direction*i,
+      y+height
+    );
+
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+
+/* =========================================================
+   PLAYER RENDER
+========================================================= */
+
+function drawPlayer(p){
+
+  ctx.save();
+
+  /*
+    Shadow.
+  */
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.28)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    p.x,
+    p.y+p.radius*.75,
+    p.radius*1.05,
+    p.radius*.4,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  const color =
+    p.team==="blue"
+      ? "#249cff"
+      : "#ff4d5a";
+
+  /*
+    WHITE KICK OUTLINE
+
+    This is only active while kicking.
+  */
+
+  if(p.kickFlash>0){
+
+    ctx.shadowBlur=26;
+
+    ctx.shadowColor="#fff";
+
+    ctx.strokeStyle="#fff";
+
+    ctx.lineWidth=6;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.radius+5,
+      0,
+      Math.PI*2
+    );
+
+    ctx.stroke();
+  }
+
+  /*
+    Main body.
+  */
+
+  ctx.shadowBlur=
+    p.kickFlash>0
+      ? 14
+      : 8;
+
+  ctx.shadowColor=
+    color;
+
+  ctx.fillStyle=
+    color;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    p.x,
+    p.y,
+    p.radius,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  /*
+    Inner body.
+  */
+
+  ctx.shadowBlur=0;
+
+  ctx.fillStyle=
+    "#0c1520";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    p.x,
+    p.y,
+    p.radius*.58,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  /*
+    Direction marker.
+  */
+
+  let dx=p.vx;
+  let dy=p.vy;
+
+  let length =
+    Math.hypot(dx,dy);
+
+  if(length<.1){
+
+    dx=
+      p.team==="blue"
+        ? 1
+        : -1;
+
+    dy=0;
+
+    length=1;
+  }
+
+  dx/=length;
+  dy/=length;
+
+  ctx.fillStyle="#fff";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    p.x+dx*8,
+    p.y+dy*8,
+    4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  /*
+    Name.
+  */
+
+  ctx.font=
+    "bold 12px Arial";
+
+  ctx.textAlign=
+    "center";
+
+  ctx.fillStyle="#fff";
+
+  ctx.shadowBlur=4;
+
+  ctx.shadowColor="#000";
+
+  ctx.fillText(
+    p.name,
+    p.x,
+    p.y-p.radius-9
+  );
+
+  ctx.restore();
+}
+
+
+/* =========================================================
+   BALL RENDER
+========================================================= */
+
+function drawBall(){
+
+  ctx.save();
+
+  /*
+    Shadow.
+  */
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.28)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    ball.x,
+    ball.y+8,
+    ball.radius*1.1,
+    ball.radius*.4,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  const speed =
+    Math.hypot(
+      ball.vx,
+      ball.vy
+    );
+
+  if(speed>7){
+
+    ctx.shadowBlur=12;
+
+    ctx.shadowColor="#fff";
+  }
+
+  /*
+    BALL
+  */
+
+  ctx.fillStyle=
+    "#f4f6f8";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    ball.x,
+    ball.y,
+    ball.radius,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  ctx.shadowBlur=0;
+
+  /*
+    Football pattern.
+  */
+
+  ctx.fillStyle=
+    "#18202a";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    ball.x,
+    ball.y,
+    ball.radius*.3,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  const spin =
+    ball.spin;
+
+  for(
+    let i=0;
+    i<5;
+    i++
+  ){
+
+    const angle =
+      spin+
+      i*Math.PI*2/5;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      ball.x+
+        Math.cos(angle)*
+        ball.radius*.63,
+
+      ball.y+
+        Math.sin(angle)*
+        ball.radius*.63,
+
+      2,
+
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function gameLoop(timestamp){
+
+  if(!game.running){
+    return;
+  }
+
+  if(!game.lastTime){
+
+    game.lastTime=
+      timestamp;
+  }
+
+  let dt =
+    (timestamp-
+      game.lastTime)/1000;
+
+  game.lastTime=
+    timestamp;
+
+  /*
+    Prevent huge physics jumps.
+  */
+
+  dt=
+    Math.min(
+      dt,
+      .033
+    );
+
+  updateGame(dt);
+
+  render();
+
+  if(game.running){
+
+    requestAnimationFrame(
+      gameLoop
+    );
+  }
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function distanceBetween(a,b){
+
+  return Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+}
+
+function roundRect(
+  x,
+  y,
+  w,
+  h,
+  r
+){
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x+r,
+    y
+  );
+
+  ctx.arcTo(
+    x+w,
+    y,
+    x+w,
+    y+h,
+    r
+  );
+
+  ctx.arcTo(
+    x+w,
+    y+h,
+    x,
+    y+h,
+    r
+  );
+
+  ctx.arcTo(
+    x,
+    y+h,
+    x,
+    y,
+    r
+  );
+
+  ctx.arcTo(
+    x,
+    y,
+    x+w,
+    y,
+    r
+  );
+
+  ctx.closePath();
+}
+
+function escapeHTML(str){
+
+  return String(str)
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+
+/* =========================================================
+   FULLSCREEN
+========================================================= */
+
+function toggleFullscreen(){
+
+  if(!document.fullscreenElement){
+
+    document.documentElement
+      .requestFullscreen()
+      .catch(()=>{});
+
+  }else{
+
+    document.exitFullscreen();
+  }
+}
+
+
+/* =========================================================
+   FUTURE ONLINE FUNCTIONS
+========================================================= */
+
+function sendPlayerUpdate(){
+
+  /*
+    Reserved for future WebSocket
+    multiplayer.
+
+    The important physics state is:
+
+      x
+      y
+      vx
+      vy
+      team
+
+    The ball is also independently
+    synchronized.
+  */
+}
+
+function startGame(){
+
+  startMatch();
+}
+
+function joinOnlineServer(){
+
+  /*
+    Future WebSocket connection.
+  */
+}
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+nicknameInput.addEventListener(
+  "keydown",
+  e=>{
+
+    if(e.key==="Enter"){
+
+      openRooms();
+    }
+  }
+);
+
+if(!nicknameInput.value){
+
+  nicknameInput.value=
+    "Player";
+}
+
+</script>
+
+</body>
+</html>
